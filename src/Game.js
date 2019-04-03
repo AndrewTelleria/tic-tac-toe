@@ -1,16 +1,17 @@
 import React from 'react';
 import Board from './Board';
 
+
 class Game extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
       history: [{
         squares: Array(9).fill(null),
-        coordinates: Array(9).fill(null),
       }],
       stepNumber: 0,
       xIsNext: true,
+      bold: false,
     }
   }
 
@@ -18,17 +19,16 @@ class Game extends React.Component {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice();
-    const coordinates = current.coordinates.slice();
 
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
     squares[i] = this.state.xIsNext ? 'X' : 'O';
-    coordinates[this.state.stepNumber] = getCoordinates(i);
     this.setState({
       history: history.concat([{
         squares: squares,
-        coordinates: coordinates,
+        coordinates: getCoordinates(i),
+        stepNumber: history.length,
       }]),
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
@@ -42,18 +42,25 @@ class Game extends React.Component {
     });
   }
 
+  makeBold() {
+    this.setState({
+      bold: true,
+    });
+  }
+
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
 
-    const moves = history.map((step, move, coordinates) => {
+    const moves = history.map((step, move) => {
+    const location = step.coordinates ? `(${step.coordinates})` : '';
       const desc = move ?
-      'Go to move #' + move + ' ' + current.coordinates[move - 1]:
+      'Go to move #' + move :
       'Go to game start';
       return (
         <li key={move}>
-          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+          <button onClick={() => this.jumpTo(move)}>{`${desc} ${location}`}</button>
         </li>
       )
     });
